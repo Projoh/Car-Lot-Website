@@ -1,0 +1,18 @@
+.full-container{
+    padding-top: 16px;
+}
+.car-list-item {
+    height: 10vh;
+    float: none;
+    object-fit: cover;
+    margin-bottom: 0px;
+}
+.car-list-item .col {
+    height:auto;
+}
+.car-list-item .col img {
+    max-height:100%; max-width:100%;
+}
+.card-panel {
+    width: 100%;
+}
