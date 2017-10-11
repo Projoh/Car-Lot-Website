@@ -15,12 +15,17 @@
 
 <body>
 
+<div class="progress">
+    <div class="indeterminate"></div>
+</div>
+
 <div class="container full-container">
+
     <div class="row">
         <div class="col s10">
             <h5>Control Panel</h5>
         </div>
-        <div class="col s2">
+        <div class="col s1">
             <a class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">add</i></a>
         </div>
     </div>
@@ -35,33 +40,105 @@
     </div>
 
     <div class="row">
-        <div class="col s12">
-            <div class="card-panel waves-effect waves-green">
-                <div class="row car-list-item">
-                    <div class="col l2 s4 m2">
-                        <img src="http://via.placeholder.com/100x100">
-                    </div>
-                    <div class="col s6 m9">
-                        <div class="flow-text">
-                            <h6 class="truncate">2017 Toyota Corrola</h6>
-                            <h6 class="flow-text truncate">Red Leather Seats Etc</h6>
+        <div class="col s12 cars-container">
+
+        </div>
+    </div>
+
+
+</div>
+
+
+<div class="modal-section">
+
+
+
+
+
+
+</div>
+
+<div class="new-modal">
+    <div id="
+modal1
+" class="modal">
+        <div class="modal-content">
+            <h4>
+                2017 Toyota Corrola RED
+            </h4>
+            <div class="row">
+                <form class="col s12">
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input value="
+Placeholder
+" id="year" type="text" class="validate">
+                            <label for="year">Year</label>
                         </div>
                     </div>
-                    <div class="col s1">
-                        <p class="flow-text grey-text"><i class="material-icons">mode_edit</i></p>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input value="
+                            Placeholder
+" id="make" type="text" class="validate">
+                            <label for="make">Make</label>
+                        </div>
                     </div>
-                </div>
-            </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input value="
+                            Placeholder
+" id="model" type="text" class="validate">
+                            <label for="model">Model</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input value="
+                            Placeholder
+" id="color" type="text" class="validate">
+                            <label for="color">Color</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="features" class="materialize-textarea"></textarea>
+                            <label for="features">Features</label>
+                        </div>
+                    </div>
+                    <div class="col s12">
+                        <h6>Images</h6>
+                        <div class="progress">
+                            <div class="determinate" style="width: 70%"></div>
+                        </div>
+                        <div class="car-images">
 
+                        </div>
+
+
+                        <a class="waves-effect waves-light btn-flat right" onclick="uploadImage()"><i class="large material-icons left">add</i>ADD MORE</a>
+
+
+
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-action waves-effect waves-green btn-flat" onclick="createNewCar('
+carID
+')">SAVE CHANGES</a>
         </div>
     </div>
 </div>
 
 
 
-
-<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase-storage.js"></script>
 <script type="text/javascript" src="js/materialize.min.js"></script>
 <script src="js/plugins.js"></script>
 <script type="text/javascript" src="js/admin.js"></script>

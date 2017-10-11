@@ -27,7 +27,7 @@ var config = {
     authDomain: "car-lot-js-website.firebaseapp.com",
     databaseURL: "https://car-lot-js-website.firebaseio.com",
     projectId: "car-lot-js-website",
-    storageBucket: "",
+    storageBucket: "gs://car-lot-js-website.appspot.com/",
     messagingSenderId: "416354068942"
 };
 firebase.initializeApp(config);
