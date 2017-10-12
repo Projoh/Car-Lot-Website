@@ -4,6 +4,10 @@ function Car() {
     this.model = "";
     this.year = 0;
     this.color = "";
+    this.vin = "";
+    this.doors = "";
+    this.price = "";
+    this.trans = ""
     this.features= "";
     this.images = "";
     this.imageURLS = "";
@@ -310,7 +314,7 @@ function createNewCar() {
     var year = $('#year').val();
     var color = $('#color').val();
     var model = $('#model').val();
-    submitCarChanges(year + color + make + model + '_'+ idNumber);
+    submitCarChanges();
 }
 
 function submitCarChanges(carID) {
@@ -337,7 +341,9 @@ function submitCarChanges(carID) {
 function addChip(carID, fileName, picLocation, count) {
     var chipImages = $('.car-chip-images');
     var chipImageElement="";
-    chipImageElement += "<div class=\"chip chip-image"+ count +"\">";
+    chipImageElement += "<div class=\"chip\" id=\"";
+    chipImageElement += "fileName";
+    chipImageElement += "\">";
     chipImageElement += "                            <img src=\"" +picLocation+"\">";
     chipImageElement += fileName;
     chipImageElement += "                            <i class=\"delete material-icons\" onclick=\"deleteImage('";
