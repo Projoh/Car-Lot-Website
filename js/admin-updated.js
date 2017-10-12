@@ -11,7 +11,7 @@ function Car() {
     this.features= "";
     this.mileage = "";
     this.images = "";
-    this.visibility = true;
+    this.visible = true;
 }
 var allCars = [];
 
@@ -47,12 +47,21 @@ $( document ).ready(function() {
     });
 });
 
+function logOut() {
+    firebase.auth().signOut().then(function() {
+        // Sign-out successful.
+    }).catch(function(error) {
+        // An error happened.
+    });
+}
+
+
 function allCarsListener() {
     carsRef = database.ref('/cars/');
     carsRef.on('value', function(snapshot) {
 
         var carsData = snapshot.val();
-
+        allCars = [];
         $.each(carsData, function(carID, carObject) {
             var car = new Car();
             car.id = carID;
@@ -64,7 +73,7 @@ function allCarsListener() {
             car.images = carObject["images"];
             car.vin = carObject["vin"];
             car.doors = carObject["doors"];
-            car.visibility = carObject["visibility"];
+            car.visible = carObject["visible"];
             car.price = carObject["price"];
             car.trans = carObject["trans"];
             car.mileage = carObject["mileage"];
@@ -79,9 +88,41 @@ function allCarsListener() {
             allCars[carID] = car;
         });
         showAllCars();
-        //loadCarImages();
+        var counter = 0;
+        for(var car in allCars){
+            counter++;
+        }
+        loadCarImages(0, counter);
 
     });
+
+    function loadCarImages(position, counter) {
+        var localPos = 0;
+        for(var carID in allCars){
+            if(position > counter) { break;}
+            if(position > localPos){
+                localPos++;
+                continue;
+            }
+            var car = allCars[carID];
+            if(car.images){
+                storageRef.child('cars/'+car.id+'/'+car.images[0]).getDownloadURL().then(function(url) {
+                    var img = document.getElementById('img-'+car.id);
+                    img.src = url;
+                    loadCarImages(++position, counter);
+                    stopProgressBar();
+                }).catch(function(error) {
+                    console.log(error.message);
+                });
+                break;
+            } else {
+                loadCarImages(++position, counter);
+            }
+        }
+
+
+
+    }
 }
 
 function showAllCars() {
@@ -90,22 +131,22 @@ function showAllCars() {
     var carElements = "";
     for(var carID in allCars){
         var car = allCars[carID];
-        carElements += "            <div class=\"card-panel waves-effect waves-green car-list-item\" onclick=\"editCar('";
+        var archived = (car.visible) ? "" : "grey lighten-3";
+        carElements += "            <div class=\"card-panel waves-effect waves-green car-list-item "+ archived +
+            "\" onclick=\"editCar('";
         carElements += car.id;
         carElements += "')\">";
         carElements += "                <div class=\"row\">";
         carElements += "                    <div class=\"col l2 s4 m2\">";
-        carElements += "                        <img id=\"img-"+carID+"\" src=\"http:\/\/via.placeholder.com\/100x100\">";
+        carElements += "                        <img id=\"img-"+carID+"\"  class=\"circle responsive-img\" src=\"http:\/\/via.placeholder.com\/100x100\">";
         carElements += "                    <\/div>";
         carElements += "                    <div class=\"col s6 m9\">";
         carElements += "                        <div class=\"flow-text\">";
-        carElements += "                            <h6>";
-        carElements += "                                " + car.year +" "+ car.make +" "+ car.model;
-        carElements += "                            <\/br>";
-        carElements += "                                " + car.color;
+        carElements += "                            <h6 >";
+        carElements += "                                " + car.year +" "+car.color+" "+ car.make + " " + car.model + " " + car.vin;
         carElements += "                            <\/h6>";
         carElements += "                            <h6 class=\"flow-text truncate\">";
-        carElements += "                                "+(car.features ? car.features : "N/A");
+        carElements += "                                " + car.doors +" doors " + car.trans+ "<br>" +(car.features ? car.features : "N/A");
         carElements += "                            <\/h6>";
         carElements += "                        <\/div>";
         carElements += "                    <\/div>";
@@ -126,6 +167,7 @@ function addChip() {
     var input = document.createElement('input');
     input.type = 'file';
     input.multiple = true;
+    input.accept = "\"image/*\"";
     input.click();
     input.addEventListener('change', function(e){
         //Get files
@@ -164,6 +206,25 @@ function editCar(carID) {
 
     addChipsFromDatabase();
 
+    function addImageInChip() {
+            var i = 0;
+           var chipImage = $('.car-chip-images').find("img");
+            if(car.images){
+                asyncLoop(0);
+            }
+            function asyncLoop(i) {
+                if(i > car.images.length-1){return;}
+                storageRef.child('cars/'+car.id+'/'+car.images[i]).getDownloadURL().then(function(url, imageName) {
+                    var imageName = car.images[i];
+                    chipImage[i].src = url;
+                    return asyncLoop(++i);
+                }).catch(function(error) {
+                    console.log(error.message);
+                });
+            }
+    }
+
+    addImageInChip();
 
 
 
@@ -186,7 +247,12 @@ function editCar(carID) {
         carElements += "\" class=\"modal\">";
         carElements += "        <div class=\"modal-content\">";
         carElements += "            <h4>";
-        carElements += car.year +" " + car.make + " " +car.model;
+        if(isNewCar){
+            carElements += "Submit new car";
+        } else {
+            carElements += car.year +" " + car.make + " " +car.model;
+
+        }
         carElements += "            <\/h4>";
         carElements += "            <div class=\"row\">";
         carElements += "                <form class=\"col s12\">";
@@ -247,7 +313,6 @@ function editCar(carID) {
         carElements += "                            <label for=\"trans\">Trans<\/label>";
         carElements += "                        <\/div>";
         carElements += "                    <\/div>";
-        carElements += "";
         carElements += "                    <div class=\"row\">";
         carElements += "                        <div class=\"input-field col s12\">";
         carElements += "                            <textarea id=\"features\" class=\"materialize-textarea\"><\/textarea>";
@@ -270,11 +335,15 @@ function editCar(carID) {
         carElements += "            <\/div>";
         carElements += "        <\/div>";
         carElements += "        <div class=\"modal-footer\">";
-        carElements += "            <a href=\"#!\" class=\"modal-action waves-effect waves-green btn-flat\" onclick=\"archiveCar('";
-        carElements += car.id;
-        carElements += "')\">";
-        carElements += "                ARCHIVE";
-        carElements += "            <\/a>";
+
+        if(!isNewCar){
+            var archiveText = (car.visible) ? "ARCHIVE" : "UNARCHIVE";
+            carElements += "            <a href=\"#!\" class=\"modal-action waves-effect waves-green btn-flat\" onclick=\"archiveCar('";
+            carElements += car.id;
+            carElements += "')\">";
+            carElements += "                "+archiveText;
+            carElements += "            <\/a>";
+        }
         carElements += "            <a href=\"#!\" class=\"modal-action waves-effect waves-green btn-flat\" onclick=\"submitEditCar('";
         carElements += car.id;
         carElements += "')\">SAVE CHANGES<\/a>";
@@ -298,7 +367,7 @@ function editCar(carID) {
             chipImageElement += "                            <i class=\"delete material-icons\" onclick=\"deleteImage('";
             chipImageElement += idNumber;
             chipImageElement += "')\">close<\/i>";
-            chipImageElement += "                        <\/div>";
+            chipImageElement += "                    <br> <br>    <\/div>";
         }
 
         chipImages.append(chipImageElement);
@@ -417,7 +486,7 @@ function submitEditCar(carID) {
                 }
                 var matchingImages = [];
                 for(var carImage in imagesInput) {
-                    if (originalImages.indexOf(carImage) > -1) {
+                    if (originalImages.indexOf(imagesInput[carImage]) > -1) {
                         matchingImages.push(imagesInput[carImage]);
                     } else {
                         imagesToUpload.push(imagesInput[carImage]);
@@ -425,9 +494,7 @@ function submitEditCar(carID) {
                 }
                 images = matchingImages.join(',');
 
-                if(images && images.count(',') < 2){
-                    images = images.replace(',', "");
-                }
+
                 database.ref('cars/' + carID+'/images/').set(images).then(function () {
                     uploadNewImages();
                 })
@@ -443,6 +510,8 @@ function submitEditCar(carID) {
 
     function uploadNewImages() {
         var imageFiles = [];
+
+        // Loops thru the images to upload and the new files to add to find matching files to names.
         for(var image in imagesToUpload) {
             for(var imgToUp in newFilesToAdd) {
                 if(newFilesToAdd[imgToUp].name.valueOf() == imagesToUpload[image]) {
@@ -451,8 +520,24 @@ function submitEditCar(carID) {
             }
         }
 
+        // Compresses the imagefile objects and then uploads those to the server
         for(var imageFile in imageFiles) {
-            uploadImageAsPromise(imageFiles[imageFile]);
+            new ImageCompressor(imageFiles[imageFile], {
+                quality: .8,
+                maxWidth: 1200,
+                maxHeight: 1200,
+                minWidth: 1000,
+                minHeight: 1000,
+                success(result) {
+                    uploadImageAsPromise(result);
+                },
+                error(e) {
+                    showCarEditErrorMessage(e.message);
+                },
+            });
+
+
+
         }
 
         var carModel = $('#'+carID);
@@ -476,6 +561,7 @@ function submitEditCar(carID) {
                 uploadTask.on('state_changed',
                     function progress(snapshot) {
                         var percentage = snapshot.bytesTransferred / snapshot.totalBytes * 100;
+                        setProgressBarPercent(percentage)
                     },
                     function error(err) {
                         showCarEditErrorMessage(err.message);
@@ -496,12 +582,6 @@ function submitEditCar(carID) {
         }
     }
 
-    function showCarEditErrorMessage(message) {
-        var errorMessageContainer = $('.car-edit-error-message');
-        errorMessageContainer.html(message);
-
-    }
-
 
 
 
@@ -513,3 +593,16 @@ function submitEditCar(carID) {
     stopProgressBar();
 }
 
+function showCarEditErrorMessage(message) {
+    var errorMessageContainer = $('.car-edit-error-message');
+    errorMessageContainer.html(message);
+}
+
+function setProgressBarPercent(percent) {
+    var progessBar = $('.image-upload');
+    progessBar.parent().removeClass("hide");
+    if(percent > 99){
+        progessBar.parent().addClass("hide");
+    }
+    progessBar.width(percentage + '%');
+}

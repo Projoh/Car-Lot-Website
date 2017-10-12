@@ -11,10 +11,12 @@
     height:auto;
 }
 .car-list-item .col img {
-    max-height:100%; max-width:100%;
+    /*padding-top: 8px;*/
+    margin-top: 16px;
 }
 .card-panel {
     width: 100%;
+    padding: 8px;
 }
 .progress {
     height: 4px;
@@ -27,7 +29,6 @@
     float: right;
     font-size: 16px;
     line-height: 32px;
-    padding-left: 8px;
 }
 .modal.modal-fixed-footer {
     height: 92% !important;
@@ -36,6 +37,5 @@
 .modal {
     width: 85% !important;
     max-height: 92% !important;
-    overflow-y: hidden !important;
     top: 5% !important;
 }
