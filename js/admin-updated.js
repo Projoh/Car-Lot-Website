@@ -11,9 +11,12 @@ function Car() {
     this.features= "";
     this.mileage = "";
     this.images = "";
+    this.imageURLS = [];
     this.visible = true;
 }
 var allCars = [];
+var origAllCars = [];
+var searching = false;
 
 var database = firebase.database();
 var storageRef = firebase.storage().ref();
@@ -34,11 +37,50 @@ function sanitizeInput(input) {
     return input.replace(/[&\/\\#,+() $~%'":*?<>{}]/g, '');
 }
 
+function searchTextBoxListener() {
+
+    $('#search').on('input', function(){
+
+
+
+        var searchText = $('#search').val();
+        if(!searching) {
+            searching = true;
+        }
+
+        if(!searchText && searching) {
+            searching = false;
+            allCars = origAllCars;
+            showAllCars();
+            loadPreLoadedCarImages();
+            return;
+        }
+
+        var matchingCars = [];
+        for(var carID in origAllCars) {
+            searchText = sanitizeInput(searchText).toLowerCase();
+            var car = origAllCars[carID];
+            if(car.make.toLowerCase().indexOf(searchText) !== -1 ||
+                car.model.toLowerCase().indexOf(searchText) !== -1 ||
+                car.year.toLowerCase().indexOf(searchText) !== -1 ||
+                car.color.toLowerCase().indexOf(searchText) !== -1
+            ){
+                matchingCars[carID] = car;
+            }
+        }
+
+        allCars = matchingCars;
+        showAllCars();
+        loadPreLoadedCarImages();
+    });
+}
+
 $( document ).ready(function() {
     console.log( "Initialized!" );
     firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
+        if (user && (user.uid == 'Lle0IlaCgwMxadNhlPmtLu2HEZg2')) {
             allCarsListener();
+            searchTextBoxListener();
             //$('.modal').modal()
             //$('#modal1').modal('open')
         } else {
@@ -86,12 +128,14 @@ function allCarsListener() {
                 }
             });
             allCars[carID] = car;
+            origAllCars[carID] = car;
         });
         showAllCars();
         var counter = 0;
         for(var car in allCars){
             counter++;
         }
+        loadPreLoadedCarImages();
         loadCarImages(0, counter);
 
     });
@@ -105,10 +149,11 @@ function allCarsListener() {
                 continue;
             }
             var car = allCars[carID];
-            if(car.images){
+            if(car.images && !car.imageURLS[0]){
                 storageRef.child('cars/'+car.id+'/'+car.images[0]).getDownloadURL().then(function(url) {
                     var img = document.getElementById('img-'+car.id);
                     img.src = url;
+                    allCars[car.id].imageURLS[0] = url;
                     loadCarImages(++position, counter);
                     stopProgressBar();
                 }).catch(function(error) {
@@ -125,13 +170,28 @@ function allCarsListener() {
     }
 }
 
+function loadPreLoadedCarImages(){
+    for(var carID in allCars) {
+        var car = allCars[carID];
+        if(car.imageURLS){
+            var img = document.getElementById('img-'+car.id);
+            if(car.imageURLS[0]){
+                img.src = car.imageURLS[0];
+            } else {
+                img.src = "http://via.placeholder.com/100x100";
+            }
+        }
+    }
+}
+
+
 function showAllCars() {
     var carsContainer = $('.cars-container');
     carsContainer.html("");
     var carElements = "";
     for(var carID in allCars){
         var car = allCars[carID];
-        var archived = (car.visible) ? "" : "grey lighten-3";
+        var archived = (car.visible === true) ? "" : "grey lighten-3";
         carElements += "            <div class=\"card-panel waves-effect waves-green car-list-item "+ archived +
             "\" onclick=\"editCar('";
         carElements += car.id;
@@ -251,7 +311,6 @@ function editCar(carID) {
             carElements += "Submit new car";
         } else {
             carElements += car.year +" " + car.make + " " +car.model;
-
         }
         carElements += "            <\/h4>";
         carElements += "            <div class=\"row\">";
@@ -337,9 +396,10 @@ function editCar(carID) {
         carElements += "        <div class=\"modal-footer\">";
 
         if(!isNewCar){
-            var archiveText = (car.visible) ? "ARCHIVE" : "UNARCHIVE";
-            carElements += "            <a href=\"#!\" class=\"modal-action waves-effect waves-green btn-flat\" onclick=\"archiveCar('";
-            carElements += car.id;
+            var archiveText = (car.visible === true) ? "ARCHIVE" : "UNARCHIVE";
+            var archiveBool = (car.visible === true) ? "false" : "true";
+            carElements += "            <a href=\"#!\" class=\"modal-action waves-effect waves-green btn-flat\" onclick=\"toggleArchive('";
+            carElements += car.id +','+ archiveBool;
             carElements += "')\">";
             carElements += "                "+archiveText;
             carElements += "            <\/a>";
@@ -406,6 +466,46 @@ function deleteImage(imageNumber) {
     chip.remove();
 }
 
+function toggleArchive(carIDandArchive) {
+    carIDandArchive = carIDandArchive.split(',');
+    var carID = carIDandArchive[0];
+    var archive = (carIDandArchive[1] == 'true')
+
+    var form = $('#'+carID).find( "form" );
+    var features = form.find('.materialize-textarea').val();
+    var make = $('#make').val();
+    var year = $('#year').val();
+    var color = $('#color').val();
+    var model = $('#model').val();
+    var vin = $('#vin').val();
+    var doors = $('#doors').val();
+    var price = $('#price').val();
+    var mileage = $('#mileage').val();
+    var trans = $('#trans').val();
+
+
+
+
+    var carRef = database.ref('cars/' + carID);
+    carRef.update({
+        make:  make,
+        year: year,
+        color : color,
+        model: model,
+        vin : vin,
+        doors: doors,
+        price: price,
+        mileage: mileage,
+        trans: trans,
+        visible : archive,
+        features: features
+    }).then(function () {
+        var carModel = $('#'+carID);
+        carModel.modal('close');
+    });
+
+}
+
 
 function submitEditCar(carID) {
     var isNewCar = false;
@@ -448,6 +548,7 @@ function submitEditCar(carID) {
             vin : vin,
             price: price,
             mileage: mileage,
+            doors: doors,
             trans: trans,
             visible : true,
             features: features
@@ -462,6 +563,7 @@ function submitEditCar(carID) {
             color : color,
             model: model,
             vin : vin,
+            doors: doors,
             price: price,
             mileage: mileage,
             trans: trans,
@@ -472,7 +574,9 @@ function submitEditCar(carID) {
         });
     }
 
-
+    var searchText = $('#search');
+    searchText.val("");
+    Materialize.updateTextFields();
 
 
 
@@ -604,5 +708,5 @@ function setProgressBarPercent(percent) {
     if(percent > 99){
         progessBar.parent().addClass("hide");
     }
-    progessBar.width(percentage + '%');
+    progessBar.width(percent + '%');
 }

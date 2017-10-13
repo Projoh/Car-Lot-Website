@@ -289,3 +289,67 @@ textarea {
         page-break-after: avoid;
     }
 }
+
+.full-container{
+}
+.navbar {
+    margin-right: 16px;
+}
+html,body
+{
+    overflow-x: hidden;
+}
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+    margin-bottom: 16px;
+}
+.car-box {
+    width: 100%;
+    margin: 0px;
+}
+.card-panel{
+    padding: 0px;
+    margin-bottom: 0px;
+    width: 100%;
+}
+.card-image {
+    padding: 16px;
+    height:100px;
+}
+.car-box .row {
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+p.bold{
+    font-weight: 500;
+}
+.search {
+    margin-bottom: 0px;
+    width: 100%;
+}
+.navbarMobile {
+    margin-bottom: 0px;
+}
+.modal .modal-content {
+    padding: 0px;
+}
+.modal .modal-text {
+    padding: 16px;
+}
+.modal.modal-fixed-footer {
+    height: 92% !important;
+    top: 5% !important;
+}
+.modal {
+    width: 85% !important;
+    max-height: 92% !important;
+    top: 5% !important;
+}
+.carousel-slider {
+}
